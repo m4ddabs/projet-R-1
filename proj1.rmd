@@ -103,14 +103,14 @@ passages aux urgences dans l’année.
 Q20
 1. Quelle est la proportion de données manquantes pour chaque variable ?
 ```{r}
-for (name in names(Q20)) {
-      print(name)
-      n_na = length(is.na(Q20$name))
-      ntot = length(Q20$name)
-      print(n_na)
-      print(ntot)
-      sprintf("La proportion de donnèes manquantes en %s est %.3f", name, n_na/ntot)
+d = dim(Q20)
+colran = 1:d[2]
+rowran = 1:d[1]
+for (i in colran) {
+      n_na = length(rowran[is.na(Q20[,i])])  
+      print(sprintf("La proportion de donnèes manquantes est %.3f per cent", n_na/d[1]*100))
 }
+
 ```
 2. Calculer la proportion d’hommes dans l’effectif des salariés temps plein pour chaque spécialité. Les
 spécialités peuvent être retrouvées en regardant les modalités de la variable PERSO. Afficher à chaque fois
