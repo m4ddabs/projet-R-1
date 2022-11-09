@@ -5,7 +5,7 @@
 library('tidyverse')
 library("ggforce") #for graphs
 library("dplyr") #for sql data manipulation
- 
+library("sqldf")
 ```
 ```{r, echo = FALSE}
 
@@ -21,10 +21,13 @@ desc_cancero <- read.csv(file = "Donnees-20221103/Desc_Cancero_Urgences.csv",
                          header = TRUE, sep = ",", dec = ".")
 
 urgences  <- read.csv(file = "Donnees-20221103/URGENCES2_2019.csv",
-                         header = TRUE, sep = ";", dec = ".")
+                         header = TRUE, sep = ",", dec = ".")
 
 Q20 <- read.csv(file = "Donnees-20221103/Q20_2019.csv",
                          header = TRUE, sep = ";", dec = ".")
+
+desc_Q20 <- read.csv(file = "Donnees-20221103/Desc_Q20.csv",
+                         header = TRUE, sep = ",", dec = ".")
 
 ```
 
@@ -39,7 +42,21 @@ desc_cancero[index]
 ```{r}
 #Define functions
 
+#given an iterable X returns a vector without doublons of elements in L
+no_doublons <- function(X){
+      L <- list()
+      for (x in X){
+            if (! x %in% L){
+                  L <- c(L,x)
+            }
+      }
+      return(L)
+}
 
+#sum excluding na values
+sum2 <- function(vector) {
+      return(sum(vector[! is.na(vector)]))
+}
 ```
 # First part of the project
 
@@ -110,8 +127,8 @@ rowran = 1:d[1]
 for (i in colran) {
       n_na = length(rowran[is.na(Q20[,i])])  
       name = names(Q20)[i]
-      print(sprintf("La proportion de donnèes manquantes de %s est %.3f per cent", name,  n_na/d[1]*100))
-
+      print(sprintf("La proportion de donnèes manquantes de %s est %.3f per cent",
+                     name,  n_na/d[1]*100))
 }
 
 ```
@@ -122,6 +139,46 @@ est :
 * la plus grande
 * la plus petite
 * la plus proche de 1/2.
+```{r}
+#I STILL NEED TO POLISH IT o(*^＠^*)o
+#trying to use sqsl in R
+#Names of all specialities, last is "total"
+specialites <- sqldf('select distinct "Label.modalité", "Valeur.Modalité"
+                from desc_Q20
+                where "Variable" = "EFFSALPLF" or
+                      "Variable" = "EFFSALPLH"')
+
+Q20sub <- sqldf('select distinct "Label.modalité", "Valeur.Modalité",
+                from Q20
+                where "Variable" = "EFFSALPLF" or
+                      "Variable" = "EFFSALPLH"')
+
+
+propH <- t(rbind(specialites[, 1], specialites[, 2], specialites[,1])) #has one row for every speciality and 3 columns
+len <- dim(propH)[1]
+for (i in 1:len) {
+      job <- propH[i,]
+      H_indices <- Q20$"PERSO" == job[2]
+      F_indices <- Q20$"PERSO" == job[2]
+      Hommes_job_total <- sum2(Q20$"EFFSALPLH"[H_indices])
+      Femmes_job_total <- sum2(Q20$"EFFSALPLF"[H_indices])
+      job_total <- Hommes_job_total + Femmes_job_total
+
+      propH[i,3] <- Hommes_job_total / job_total
+}
+
+
+
+
+
+
+
+
+
+
+
+
+```
 3. Ordonner les spécialités en fonction du nombre total d’effectif équivalent temps plein (ETP) des hospi-
 taliers universitaires titulaires (variable ETP_PU). Afficher les 10 premières. Représenter graphiquement
 par un diagramme en barre ce nombre pour les 5 premières.
