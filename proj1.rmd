@@ -139,8 +139,12 @@ est :
 * la plus grande
 * la plus petite
 * la plus proche de 1/2.
+
+We run an SQL request with sqldf to get the IDs of the specialities and their labels
+We then create a table containing the proportions of men in the various jobs.
 ```{r}
 #I STILL NEED TO POLISH IT o(*^＠^*)o
+#maybe i should've add it directly as a new vairable but ok
 #trying to use sqsl in R
 #Names of all specialities, last is "total"
 specialites <- sqldf('select distinct "Label.modalité", "Valeur.Modalité"
@@ -160,19 +164,29 @@ for (i in 1:len) {
 
       propH[i,3] <- Hommes_job_total / job_total
 }
-
-
-
-
-
-
-
-
-
-
-
-
 ```
+We calculate the various requests of the exercise.
+
+* Speciality with the higher percentage of man
+```{r}
+i <- which.max(propH[,3])
+sprintf("%s has a male staff percentage of %.2f%%", propH[i,1], as.double(propH[i,3])*100)
+```
+
+* Speciality with the lowest percentage of man
+```{r}
+i <- which.min(propH[,3])
+sprintf("%s has a male staff percentage of %.2f%%", propH[i,1], as.double(propH[i,3])*100)
+```
+
+* * Speciality with percentage closest to 50%
+
+```{r}
+dist_vector <- abs(as.double(propH[,3]) - 1/2)
+i <- which.min(dist_vector)
+sprintf("%s has a male staff percentage of %.2f%%", propH[i,1], as.double(propH[i,3])*100)
+```
+
 3. Ordonner les spécialités en fonction du nombre total d’effectif équivalent temps plein (ETP) des hospi-
 taliers universitaires titulaires (variable ETP_PU). Afficher les 10 premières. Représenter graphiquement
 par un diagramme en barre ce nombre pour les 5 premières.
