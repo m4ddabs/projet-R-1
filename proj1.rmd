@@ -148,12 +148,6 @@ specialites <- sqldf('select distinct "Label.modalité", "Valeur.Modalité"
                 where "Variable" = "EFFSALPLF" or
                       "Variable" = "EFFSALPLH"')
 
-Q20sub <- sqldf('select distinct "Label.modalité", "Valeur.Modalité",
-                from Q20
-                where "Variable" = "EFFSALPLF" or
-                      "Variable" = "EFFSALPLH"')
-
-
 propH <- t(rbind(specialites[, 1], specialites[, 2], specialites[,1])) #has one row for every speciality and 3 columns
 len <- dim(propH)[1]
 for (i in 1:len) {
