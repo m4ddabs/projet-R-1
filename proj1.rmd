@@ -12,17 +12,18 @@ library("dplyr") #for sql data manipulation
 getwd()
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
+
 #Imports of databases add "../" in front of file path before compiling in R mark down
-cancero <- read.csv(file = "../project1_R/Donnees-20221103/CANCERO_2019.csv",
+cancero <- read.csv(file = "Donnees-20221103/CANCERO_2019.csv",
                     header = TRUE, sep = ";", dec = ".")
 
-desc_cancero <- read.csv(file = "../project1_R/Donnees-20221103/Desc_Cancero_Urgences.csv",
+desc_cancero <- read.csv(file = "Donnees-20221103/Desc_Cancero_Urgences.csv",
                          header = TRUE, sep = ",", dec = ".")
 
-urgences  <- read.csv(file = "../project1_R/Donnees-20221103/URGENCES2_2019.csv",
+urgences  <- read.csv(file = "Donnees-20221103/URGENCES2_2019.csv",
                          header = TRUE, sep = ";", dec = ".")
 
-Q20 <- read.csv(file = "../project1_R/Donnees-20221103/Q20_2019.csv",
+Q20 <- read.csv(file = "Donnees-20221103/Q20_2019.csv",
                          header = TRUE, sep = ";", dec = ".")
 
 ```
