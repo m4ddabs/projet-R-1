@@ -109,7 +109,9 @@ colran = 1:d[2]
 rowran = 1:d[1]
 for (i in colran) {
       n_na = length(rowran[is.na(Q20[,i])])  
-      print(sprintf("La proportion de donnèes manquantes est %.3f per cent", n_na/d[1]*100))
+      name = names(Q20)[i]
+      print(sprintf("La proportion de donnèes manquantes de %s est %.3f per cent", name,  n_na/d[1]*100))
+
 }
 
 ```
