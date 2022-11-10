@@ -20,8 +20,11 @@ cancero <- read.csv(file = "Donnees-20221103/CANCERO_2019.csv",
 desc_cancero <- read.csv(file = "Donnees-20221103/Desc_Cancero_Urgences.csv",
                          header = TRUE, sep = ",", dec = ".")
 
-urgences  <- read.csv(file = "Donnees-20221103/URGENCES2_2019.csv",
-                         header = TRUE, sep = ",", dec = ".")
+urgences2019  <- read.csv(file = "Donnees-20221103/URGENCES2_2019.csv",
+                         header = TRUE, sep = ";", dec = ".")
+
+urgences2020  <- read.csv(file = "Donnees-20221103/URGENCES2_2020.csv",
+                         header = TRUE, sep = ";", dec = ".")
 
 Q20 <- read.csv(file = "Donnees-20221103/Q20_2019.csv",
                          header = TRUE, sep = ";", dec = ".")
@@ -104,15 +107,31 @@ Urgences
 de passages aux urgences en 2019 pour des patients de plus de 80 ans au nombre total de passages aux
 urgences dans la même année pour des patients de moins de 18 ans (variables dt80 et dt18). Quelle est
 l’unité d’urgence générale pour laquelle la proportion de patients de moins de 18 ans est la plus élevée ?
+
 ```{r}
+#il y a un souci ici je pense A REVOIR
 #urgenero <- merge(cancero, urgences, by = "FI") #inner join
-urgtot <- urgences$dt80 + urgences$dt18
-prop <- urgences$dt18 / urgtot
+urgtot <- urgences2019$dt80 + urgences2019$dt18
+prop <- urgences2019$dt18 / urgtot
 sprintf("l’unité d’urgence générale pour laquelle la proportion de patients de moins de 18 ans est la plus élevée est FI = %s", 
-         urgences$FI[which.max(prop)])
+         urgences2019$FI[which.max(prop)])
 ```
 2. Dans combien d’unites générales a-t-on rajouté des lits en 2020 par rapport à 2019 ? La variable
 LIT_UHCD contient le nombre de lits installés au 31/12.
+
+```{r}
+nb_unit_lit_nouveaux <-0 
+nb_lit_nouveaux<-urgences2019[urgences2019$URG == "GEN","LIT_UHCD"]-urgences2020[urgences2019$URG == "GEN", "LIT_UHCD"]
+nb_lit_nouveaux<-nb_lit_nouveaux[!is.na(nb_lit_nouveaux)]
+for(i in seq(1,length(nb_lit_nouveaux))){
+  if (nb_lit_nouveaux[i] > 0){
+    nb_unit_lit_nouveaux <- nb_unit_lit_nouveaux +1
+  }
+}
+sprintf("nombre d’unites générales qui ont rajoute des lits en 2020 par rapport a 2019 : %i", nb_unit_lit_nouveaux)
+```
+
+
 3. Représenter graphiquement l’évolution de la moyenne annuelle du nombre total de passages aux urgences
 dans les unités générales entre 2017 et 2021. Indication : la variable PASSU donne le nombre total de
 passages aux urgences dans l’année.
