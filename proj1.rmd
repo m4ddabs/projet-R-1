@@ -154,12 +154,14 @@ specialites <- sqldf('select distinct "Label.modalité", "Valeur.Modalité"
 
 propH <- t(rbind(specialites[, 1], specialites[, 2], specialites[,1])) #has one row for every speciality and 3 columns
 len <- dim(propH)[1]
+
+#Could've also added a new variable to specialites
 for (i in 1:len) {
       job <- propH[i,]
       H_indices <- Q20$"PERSO" == job[2]
       F_indices <- Q20$"PERSO" == job[2]
       Hommes_job_total <- sum2(Q20$"EFFSALPLH"[H_indices])
-      Femmes_job_total <- sum2(Q20$"EFFSALPLF"[H_indices])
+      Femmes_job_total <- sum2(Q20$"EFFSALPLF"[F_indices])
       job_total <- Hommes_job_total + Femmes_job_total
 
       propH[i,3] <- Hommes_job_total / job_total
@@ -183,11 +185,25 @@ sprintf("%s has a male staff percentage of %.2f%%", propH[i,1], as.double(propH[
 
 ```{r}
 dist_vector <- abs(as.double(propH[,3]) - 1/2)
-i <- which.min(dist_vector)
+i <- which.min(propH[,3])
 sprintf("%s has a male staff percentage of %.2f%%", propH[i,1], as.double(propH[i,3])*100)
 ```
 
 3. Ordonner les spécialités en fonction du nombre total d’effectif équivalent temps plein (ETP) des hospi-
 taliers universitaires titulaires (variable ETP_PU). Afficher les 10 premières. Représenter graphiquement
 par un diagramme en barre ce nombre pour les 5 premières.
-2
+
+```{r}
+#not sure why it doesn't work
+specialites$ETP_tot <- rep(0,len)
+
+for (i in 1:len) {
+      indices <- Q20$"PERSO" == specialites[i,2] #finds indices corresponding to speciality ID
+      tot_ETP <- sum2(Q20$"ETP_PU"[indices])
+      specialites$ETP_tot[i] <- tot_ETP
+}
+
+ordered_specialites <- specialites[order(specialites$ETP_tot, decreasing = TRUE),]
+
+
+```
