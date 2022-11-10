@@ -193,6 +193,7 @@ sprintf("%s has a male staff percentage of %.2f%%", propH[i,1], as.double(propH[
 taliers universitaires titulaires (variable ETP_PU). Afficher les 10 premières. Représenter graphiquement
 par un diagramme en barre ce nombre pour les 5 premières.
 
+We add a variable (ETP_tot) to the table specialites containing the total of ETP for each speciality
 ```{r}
 #not sure why it doesn't work
 specialites$ETP_tot <- rep(0,len)
@@ -205,5 +206,11 @@ for (i in 1:len) {
 
 ordered_specialites <- specialites[order(specialites$ETP_tot, decreasing = TRUE),]
 
+```
 
+We print the first 5 specialities with the highest total ETP and print a column graph
+```{r}
+
+indices <- c(1,3)
+print(ordered_specialites[2:6,indices]) #the first line is the total
 ```
