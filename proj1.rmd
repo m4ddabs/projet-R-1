@@ -6,14 +6,13 @@ library('tidyverse')
 library("ggforce") #for graphs
 library("dplyr") #for sql data manipulation
 library("sqldf")
+library("lmtest") #for Breusch-Pagan Test for etero
 ```
 ```{r, echo = FALSE}
 
 getwd()
 setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
 
-
-#Imports of databases add "../" in front of file path before compiling in R mark down
 cancero <- read.csv(file = "Donnees-20221103/CANCERO_2019.csv",
                     header = TRUE, sep = ";", dec = ".")
 
@@ -38,8 +37,7 @@ desc_Q20 <- read.csv(file = "Donnees-20221103/Desc_Q20.csv",
 #attach databases, only run once
 attach(cancero)
 attach(desc_cancero)
-index <- desc_cancero$Valeur.Modalité == "CANCERO_A1"
-desc_cancero[index]
+
 ```
 
 ```{r}
@@ -93,12 +91,12 @@ Représenter graphiquement
 en fonction du nombre de Patients. Commenter les résultats. Faire un zoom sur le graphique en ne
 représentant que les hôpitaux ayant moins de 2000 patients
 ```{r}
-cancero$Patients = CANCERO_A11 + CANCERO_B11 + CANCERO_C11 + CANCERO_D11
+cancero$Patients <- CANCERO_A11 + CANCERO_B11 + CANCERO_C11 + CANCERO_D11
 
 
-ggplot(cancero)+ #zoom
+ggplot(cancero) + 
       geom_point(aes(x = Patients, y = CANCERO_C28), col = "red")+
-      facet_zoom(xlim = c(0, 2000))
+      facet_zoom(xlim = c(0, 2000)) #zoom
 
 ```
 
@@ -167,8 +165,8 @@ We then create a table containing the proportions of men in the various jobs.
 #trying to use sqsl in R
 #Names of all specialities, last is "total"
 specialites <- sqldf('select distinct "Label.modalité", "Valeur.Modalité"
-                from desc_Q20
-                where "Variable" = "EFFSALPLF" or
+                      from desc_Q20
+                      where "Variable" = "EFFSALPLF" or
                       "Variable" = "EFFSALPLH"')
 
 propH <- t(rbind(specialites[, 1], specialites[, 2], specialites[,1])) #has one row for every speciality and 3 columns
@@ -229,8 +227,32 @@ ordered_specialites <- specialites[order(specialites$ETP_tot, decreasing = TRUE)
 
 We print the first 5 specialities with the highest total ETP and print a column graph
 ```{r}
-
 indices <- c(1,3)
 print(ordered_specialites[2:6,indices]) #the first line is the total
+short_ordered_specialites <- ordered_specialites[2:6,]
 
+barplot(height = short_ordered_specialites[,3], names.arg = short_ordered_specialites[,2], legend.text = "Specialities with higher total ETP", col = "green")
+
+
+```
+
+# Description et analyse des Données
+### Etude de la relation entre le nombre de médecins oncologues médicaux ETP et nombre de patients.
+
+Dans le graph de l'exercise 3 de CANCERo on observe que il y a un tendance de variance croissante avec la variable Patients, on dois donc testè l'hétéroscédasticité pour povoir appliquè la regression lineaire. On fait ça avec le Test de Breusch-Pagan.
+```{r}
+#variables we care about: Patients, CANCERO_C28 of cancero
+model_cancero <- lm(CANCERO_C28 ~ Patients, data = cancero)
+bptest(model_cancero)
+
+```
+Le p-value est 5.689e-12. Donc il est plut petit de 0.05, on rejet l'hypothese null et il y a  de l'hétéroscédasticité dans le modele.
+
+Nous essayons ensuite de transformer la variable Patients pour éliminer l'hétéroscédasticité. 
+
+```{r}
+cancero$log_Patients <- log10(cancero$Patients)
+cancero$log_CANCERO_C28 <- log10(cancero$CANCERO_C28)
+model2_cancero <- lm(CANCERO_C28 ~ log_Patients, data = cancero)
+bptest(model2_cancero)
 ```
