@@ -120,14 +120,9 @@ sprintf("l’unité d’urgence générale pour laquelle la proportion de patien
 LIT_UHCD contient le nombre de lits installés au 31/12.
 
 ```{r}
-<<<<<<< HEAD
-nb_unit_lit_nouveaux <- 0
-nb_lit_nouveaux<-urgences2019[urgences2019$URG == "GEN","LIT_UHCD"]-urgences2020[urgences2019$URG == "GEN", "LIT_UHCD"]
-=======
 nb_unit_lit_nouveaux <-0
 urgences2019_2020<-merge(urgences2019[urgences2019$URG == "GEN",],urgences2020[urgences2020$URG == "GEN",], by="FI")
 nb_lit_nouveaux<-urgences2019_2020[,"LIT_UHCD.x"]-urgences2019_2020[, "LIT_UHCD.y"]
->>>>>>> e9a92a8 (Finished question 2 and fixed question 1 of exercice 2, updated gitignore)
 nb_lit_nouveaux<-nb_lit_nouveaux[!is.na(nb_lit_nouveaux)]
 for(i in seq(1,length(nb_lit_nouveaux))){
   if (nb_lit_nouveaux[i] > 0){
