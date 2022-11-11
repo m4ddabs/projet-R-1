@@ -2,6 +2,10 @@
 # Edit at https://www.toptal.com/developers/gitignore?templates=r,visualstudiocode
 
 ### R ###
+# Rmd knits
+
+*.html
+
 # History files
 .Rhistory
 .Rapp.history
