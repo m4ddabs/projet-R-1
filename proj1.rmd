@@ -7,6 +7,7 @@ library("ggforce") #for graphs
 library("dplyr") #for sql data manipulation
 library("sqldf")
 library("lmtest") #for Breusch-Pagan Test for etero
+library("FactoMineR")
 ```
 ```{r, echo = FALSE}
 
