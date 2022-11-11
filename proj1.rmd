@@ -49,7 +49,7 @@ attach(desc_cancero)
 
 ```
 
-```{r}
+```{r, echo = FALSE}
 #Define functions
 
 #given an iterable X returns a vector without doublons of elements in L
@@ -67,6 +67,18 @@ no_doublons <- function(X){
 sum2 <- function(vector) {
       return(sum(vector[! is.na(vector)]))
 }
+
+#calculates and plots regression confidence interval
+reg_conf_interval <- function(x,y) {
+  
+  n <- sum(!is.na(x + y))
+  lm.model <- lm(y ~ x) # Fit linear model
+  
+  # Extract coefficients
+  b0 <- lm.model$coefficients[1]
+  b1 <- lm.model$coefficients[2]
+  
+}
 ```
 # First part of the project
 
@@ -76,6 +88,7 @@ par chimiothérapie dans l’année en MCO (variable CANCERO_A11) ?
 
 ```{r}
 N_chem_adults_MCO <- sum(CANCERO_A11[! is.na(CANCERO_A11)])
+print(N_chem_adults_MCO)
 ```
 2. Comparer la proportion des adultes atteints de cancer ayant eu un traitement par chimiothérapie
 (MCO et HAD) en hospitalisation à domicile (HAD, variable CANCERO_B11) à la proportion des enfants
@@ -89,9 +102,8 @@ N_chem_childs_HAD <- sum(CANCERO_D11[! is.na(CANCERO_D11)])
 
 HAD_tot <- N_chem_adults_HAD + N_chem_childs_HAD
 MCO_tot <- N_chem_adults_MCO + N_chem_childs_MCO
-print(paste("The HAD adults percentage is:", as.character(N_chem_adults_HAD/HAD_tot),
-      " The MCO adults percentage is: ", as.character(N_chem_adults_MCO/MCO_tot)))
-#use sprintf
+sprintf("The HAD adults percentage is :%.2f%%
+         The MCO adults percentage is: %.2f%% ",N_chem_adults_HAD/HAD_tot*100,           N_chem_adults_MCO/MCO_tot*100)
 ```
 3. Créer une variable Patients contenant pour chaque hôpital le nombre total de personnes ayant eu
 un traitement par chimiothérapie (enfants et adultes, en MCO ou HAD). 
@@ -186,9 +198,7 @@ est :
 We run an SQL request with sqldf to get the IDs of the specialities and their labels
 We then create a table containing the proportions of men in the various jobs.
 ```{r}
-#I STILL NEED TO POLISH IT o(*^＠^*)o
-#maybe i should've add it directly as a new vairable but ok
-#trying to use sqsl in R
+
 #Names of all specialities, last is "total"
 specialites <- sqldf('select distinct "Label.modalité", "Valeur.Modalité"
                       from desc_Q20
@@ -274,11 +284,35 @@ bptest(model_cancero)
 ```
 Le p-value est 5.689e-12. Donc il est plut petit de 0.05, on rejet l'hypothese null et il y a  de l'hétéroscédasticité dans le modele.
 
-Nous essayons ensuite de transformer la variable Patients pour éliminer l'hétéroscédasticité. 
+Nous transformon la variable Patients pour éliminer l'hétéroscédasticité en prenant le log des les deux variables. 
 
 ```{r}
 cancero$log_Patients <- log10(cancero$Patients)
+#cancero$log_Patients[is.infinite(cancero$log_Patients),] <- NA 
 cancero$log_CANCERO_C28 <- log10(cancero$CANCERO_C28)
-model2_cancero <- lm(CANCERO_C28 ~ log_Patients, data = cancero)
+cancero$log_CANCERO_C28[is.infinite(cancero$log_CANCERO_C28)] <- NA 
+model2_cancero <- lm(log_CANCERO_C28 ~ log_Patients, data = cancero)
 bptest(model2_cancero)
+
 ```
+```{r}
+summary(model2_cancero)
+```
+
+Pour pouvoir faire une regression lineaire Gaussienne on test que le bruits de le nouveau modele suive une distribution Gaussienne avec le test de normalité de Shapiro-Wilk. Comme la valeur p est inférieure à 0.05 la distribution des bruits est significativement différente de la distribution gaussienne.
+```{r}
+b0 <- model2_cancero$coefficients[1]
+b1 <- model2_cancero$coefficients[2]
+bruits_cancero <- cancero$log_CANCERO_C28 - cancero$log_Patients*b1 - b0
+shapiro.test(bruits_cancero)
+hist(bruits_cancero)
+
+```
+
+```{r}
+ggplot(cancero, aes(x=log_Patients, y=log_CANCERO_C28)) + 
+  geom_point(color='#2980B9', size = 4) + 
+  geom_smooth(method=lm, color='#2C3E50')
+
+```
+
