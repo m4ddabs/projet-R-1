@@ -209,7 +209,6 @@ for (i in 1:len) {
       Hommes_job_total <- sum2(Q20$"EFFSALPLH"[H_indices])
       Femmes_job_total <- sum2(Q20$"EFFSALPLF"[F_indices])
       job_total <- Hommes_job_total + Femmes_job_total
-
       propH[i,3] <- Hommes_job_total / job_total
 }
 ```
@@ -352,6 +351,48 @@ Pour calculer les intervalles de confiance pour la régression linéaire, nous s
   lines(y = 10^bands[,2], x = 10^x_bands, col = 'blue', lty = 2, lwd = 2)
 
 ```
+
+
+### Étude des spécialités en fonction du sexe en faisant une ACP
+
+En premier nous allons créer le dataframe qui contient le nombre de d'hommes et de femmes par spécialité.
+```{r}
+job_ids<-levels(factor(Q20$PERSO))
+job_titles <- c()
+for(i in 1:length(job_ids)){
+  d20 <- desc_Q20[desc_Q20$Valeur.Modalité==job_ids[i],"Label.modalité"]
+  job_titles[i]<-d20[1]
+}
+nb_hommes<-c()
+nb_femmes<-c()
+for(i in 1:length(job_ids)){
+  nb_hommes[i]<-sum(Q20[Q20$PERSO == job_ids[i], "EFFSALPLH"], na.rm = TRUE)
+  nb_femmes[i]<-sum(Q20[Q20$PERSO == job_ids[i], "EFFSALPLF"], na.rm = TRUE)
+}
+
+specialites_hf <- data.frame(nb_femmes,nb_hommes)
+rownames(specialites_hf)<-job_titles
+specialites_hf<-specialites_hf[1:(length(job_titles)-1),]
+summary(specialites_hf)
+```
+Vers la fin du block on supprime la dernière ligne du tableau car elle contient le nombre total d'hommes et femmes dans toutes les spécialités. 
+
+Maintenant faisons l'ACP:
+
+```{r}
+acp_specialites<-PCA(specialites_hf)
+barplot(acp_specialites$eig[,2])
+```
+Donc ici nous allons clairement choisir les deux axes. 
+
+Regardons les variables sur l'axe 1 et 2:
+
+```{r}
+plot(acp_specialites,choix="var",axes=c(1,2))
+```
+D'après le graphe nous pouvons voir que les deux variables sont corrélées partiellement. 
+
+
 
 
 
