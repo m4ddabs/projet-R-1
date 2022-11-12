@@ -121,8 +121,6 @@ urgences dans la même année pour des patients de moins de 18 ans (variables dt
 l’unité d’urgence générale pour laquelle la proportion de patients de moins de 18 ans est la plus élevée ?
 
 ```{r}
-#il y a un souci ici je pense A REVOIR
-#urgenero <- merge(cancero, urgences, by = "FI") #inner join
 urgtot <- urgences2019[urgences2019$URG== "GEN", "dt80"] + urgences2019[urgences2019$URG == "GEN", "dt18"]
 prop <- urgences2019[urgences2019$URG== "GEN", "dt80"] / urgtot
 sprintf("l’unité d’urgence générale pour laquelle la proportion de patients de moins de 18 ans est la plus élevée est FI = %s", 
@@ -161,12 +159,12 @@ evo_an<-data.frame(annee, moy_an)
 
 ggplot(data = evo_an, aes(x=annee, y=moy_an )) + 
   geom_line(color = "red", linetype = 5) +
-   ggtitle("evolution moyenne")
+   ggtitle("Evolution moyenne")
 ```
 
 
 
-Q20
+### Q20
 1. Quelle est la proportion de données manquantes pour chaque variable ?
 ```{r}
 d = dim(Q20)
@@ -188,8 +186,7 @@ est :
 * la plus petite
 * la plus proche de 1/2.
 
-We run an SQL request with sqldf to get the IDs of the specialities and their labels
-We then create a table containing the proportions of men in the various jobs.
+Nous lançons une requête SQL avec sqldf pour obtenir les ID des spécialités et leurs étiquettes ; nous créons ensuite un tableau contenant les proportions d'hommes dans les différents emplois.
 ```{r}
 
 #Names of all specialities, last is "total"
@@ -197,11 +194,12 @@ specialites <- sqldf('select distinct "Label.modalité", "Valeur.Modalité"
                       from desc_Q20
                       where "Variable" = "EFFSALPLF" or
                       "Variable" = "EFFSALPLH"')
+#propH has one row for every speciality, last column will containt the correspondent proportion
+propH <- t(rbind(specialites[, 1], specialites[, 2], specialites[,1]))
 
-propH <- t(rbind(specialites[, 1], specialites[, 2], specialites[,1])) #has one row for every speciality and 3 columns
 len <- dim(propH)[1]
 
-#Could've also added a new variable to specialites
+
 for (i in 1:len) {
       job <- propH[i,]
       H_indices <- Q20$"PERSO" == job[2]
@@ -213,21 +211,20 @@ for (i in 1:len) {
       propH[i,3] <- Hommes_job_total / job_total
 }
 ```
-We calculate the various requests of the exercise.
 
-* Speciality with the higher percentage of man
+* Spécialité avec le plus grand pourcentage d'hommes
 ```{r}
 i <- which.max(propH[,3])
 sprintf("%s has a male staff percentage of %.2f%%", propH[i,1], as.double(propH[i,3])*100)
 ```
 
-* Speciality with the lowest percentage of man
+* Spécialité avec le plus faible pourcentage d'hommes
 ```{r}
 i <- which.min(propH[,3])
 sprintf("%s has a male staff percentage of %.2f%%", propH[i,1], as.double(propH[i,3])*100)
 ```
 
-* * Speciality with percentage closest to 50%
+* Spécialité dont le pourcentage est le plus proche de 50 %.
 
 ```{r}
 dist_vector <- abs(as.double(propH[,3]) - 1/2)
@@ -239,7 +236,7 @@ sprintf("%s has a male staff percentage of %.2f%%", propH[i,1], as.double(propH[
 taliers universitaires titulaires (variable ETP_PU). Afficher les 10 premières. Représenter graphiquement
 par un diagramme en barre ce nombre pour les 5 premières.
 
-We add a variable (ETP_tot) to the table specialites containing the total of ETP for each speciality
+Nous ajoutons une variable (ETP_tot) contenant le total des ETP pour chaque spécialité,  à la table specialites.
 ```{r}
 
 specialites$ETP_tot <- rep(0,len)
@@ -254,7 +251,7 @@ ordered_specialites <- specialites[order(specialites$ETP_tot, decreasing = TRUE)
 
 ```
 
-We print the first 5 specialities with the highest total ETP and print a column graph
+Nous imprimons les 5 premières spécialités avec le total d'ETP le plus élevé et nous imprimons un graphique en colonnes.
 ```{r}
 indices <- c(1,3)
 print(ordered_specialites[2:6,indices]) #the first line is the total
@@ -267,6 +264,7 @@ barplot(height = short_ordered_specialites[,3], names.arg = short_ordered_specia
 
 # Description et analyse des Données
 ### Etude de la relation entre le nombre de médecins oncologues médicaux ETP et nombre de patients.
+Dans cette partie de l'analyse, nous visons à créer une ligne d'approximation linéaire avec un intervalle de confiance associé afin de mettre en relation le nombre nécessaire de  médecins oncologues ETP en fonction du nombre de Patients pour d'éventuels nouveaux hôpitaux
 
 Dans le graph de l'exercise 3 de CANCERo on observe que il y a un tendance de variance croissante avec la variable Patients, on dois donc testè l'hétéroscédasticité pour povoir appliquè la regression lineaire. On fait ça avec le Test de Breusch-Pagan.
 ```{r}
@@ -292,7 +290,7 @@ bptest(model2_cancero)
 summary(model2_cancero)
 ```
 
-Pour calculer les intervalles de confiance pour la régression linéaire, nous supposons que les bruits suivent (approximativement) une distribution gaussienne. Cette hypothèse est valable en raison du théorème de la limite centrale lorsque le nombre d'échantillons est grand.
+Pour calculer les intervalles de confiance pour la régression linéaire, nous supposons que les bruits suivent (approximativement) une distribution gaussienne. Cette hypothèse est valable en raison du théorème centrale de limite et lorsque le nombre d'échantillons est grand. Nous représentons ici graphiquement la régression linéaire avec le log-ajustement et sans, représentant l'intervalle de confiance
 ```{r}
 #remove Na values
   x <- cancero$log_Patients
