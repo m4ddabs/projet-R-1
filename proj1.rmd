@@ -69,19 +69,10 @@ sum2 <- function(vector) {
       return(sum(vector[! is.na(vector)]))
 }
 
-#calculates and plots regression confidence interval
-reg_conf_interval <- function(x,y) {
-  
-  n <- sum(!is.na(x + y))
-  lm.model <- lm(y ~ x) # Fit linear model
-  
-  # Extract coefficients
-  b0 <- lm.model$coefficients[1]
-  b1 <- lm.model$coefficients[2]
-  
-}
+
+
 ```
-# First part of the project
+# Première partie du projet
 
 ### Cancero
 1. Quel est le nombre de patients adulte (âge > ou égal à 18 ans) atteints de cancer ayant eu un traitement
@@ -103,8 +94,9 @@ N_chem_childs_HAD <- sum(CANCERO_D11[! is.na(CANCERO_D11)])
 
 HAD_tot <- N_chem_adults_HAD + N_chem_childs_HAD
 MCO_tot <- N_chem_adults_MCO + N_chem_childs_MCO
-sprintf("The HAD adults percentage is :%.2f%%
-         The MCO adults percentage is: %.2f%% ",N_chem_adults_HAD/HAD_tot*100,           N_chem_adults_MCO/MCO_tot*100)
+sprintf("The HAD adults percentage is :%.2f%%", N_chem_adults_HAD/HAD_tot*100)
+sprintf("The MCO adults percentage is: %.2f%%", N_chem_adults_MCO/MCO_tot*100)
+
 ```
 3. Créer une variable Patients contenant pour chaque hôpital le nombre total de personnes ayant eu
 un traitement par chimiothérapie (enfants et adultes, en MCO ou HAD). 
@@ -122,7 +114,7 @@ ggplot(cancero) +
 
 ```
 
-Urgences
+### Urgences
 1. Dans les unités des urgences générales (celles pour lesquelles URG == "GEN"), comparer le nombre total
 de passages aux urgences en 2019 pour des patients de plus de 80 ans au nombre total de passages aux
 urgences dans la même année pour des patients de moins de 18 ans (variables dt80 et dt18). Quelle est
@@ -285,8 +277,8 @@ bptest(model_cancero)
 ```
 Le p-value est 5.689e-12. Donc il est plut petit de 0.05, on rejet l'hypothese null et il y a  de l'hétéroscédasticité dans le modele.
 
-Nous transformon la variable Patients pour éliminer l'hétéroscédasticité en prenant le log des les deux variables. 
 
+Nous transformon la variable Patients pour éliminer l'hétéroscédasticité en prenant le log des les deux variables. 
 ```{r}
 cancero$log_Patients <- log10(cancero$Patients)
 #cancero$log_Patients[is.infinite(cancero$log_Patients),] <- NA 
@@ -300,20 +292,66 @@ bptest(model2_cancero)
 summary(model2_cancero)
 ```
 
-Pour pouvoir faire une regression lineaire Gaussienne on test que le bruits de le nouveau modele suive une distribution Gaussienne avec le test de normalité de Shapiro-Wilk. Comme la valeur p est inférieure à 0.05 la distribution des bruits est significativement différente de la distribution gaussienne.
+Pour calculer les intervalles de confiance pour la régression linéaire, nous supposons que les bruits suivent (approximativement) une distribution gaussienne. Cette hypothèse est valable en raison du théorème de la limite centrale lorsque le nombre d'échantillons est grand.
 ```{r}
-b0 <- model2_cancero$coefficients[1]
-b1 <- model2_cancero$coefficients[2]
-bruits_cancero <- cancero$log_CANCERO_C28 - cancero$log_Patients*b1 - b0
-shapiro.test(bruits_cancero)
-hist(bruits_cancero)
+#remove Na values
+  x <- cancero$log_Patients
+  y <- cancero$log_CANCERO_C28
+  non_na_indices <- !is.na(x + y) 
+  x <- x[non_na_indices]
+  y <- y[non_na_indices]
+  #non_null_indices <- !is.null(x+y)
+  #x <- x[non_null_indices]
+  #y <- y[non_null_indices]
+  
+  n <- length(x) #find number of samples after removal of Na values
+  lm.model <- lm(y ~ x) # Fit linear model
+
+  
+  # Extract fitted coefficients from model
+  b0 <- lm.model$coefficients[1]
+  b1 <- lm.model$coefficients[2]
+  
+  # Find SSE and MSE
+  sse <- sum((y - lm.model$fitted.values)^2)
+  mse <- sse / (n - 2)
+  t.val <- qt(0.975, n - 2) # Calculate critical t-value
+  
+  # Fit linear model with extracted coefficients
+  x_new <- 1:max(x)
+  y.fit <- b1 * x_new + b0
+  
+  # Find the standard error of the regression line
+  se <- sqrt(sum((y - y.fit)^2) / (n - 2)) * sqrt(1 / n + (x - mean(x))^2 / sum((x -      mean(x))^2))
+  
+  # Fit a new linear model that extends past the given data points (for plotting)
+  x_new2 <- 1:max(x + 100)
+  y.fit2 <- b1 * x_new2 + b0
+  
+   # Warnings of mismatched lengths are suppressed
+  slope.upper <- suppressWarnings(y.fit2 + t.val * se)
+  slope.lower <- suppressWarnings(y.fit2 - t.val * se)
+  x_bands <- 1:length(se)
+  
+  # Collect the computed confidence bands into a data.frame and name the colums
+  bands <- data.frame(cbind(slope.lower, slope.upper))
+  colnames(bands) <- c('Lower Confidence Band', 'Upper Confidence Band')
+  
+  # Plot the fitted linear regression line and the computed confidence bands
+  plot(x, y, cex = 1.75, pch = 21, bg = 'gray', xlab = "log_Patients", ylab = "log_CANCERO_C28")
+  lines(y.fit2, col = 'black', lwd = 2)
+  lines(bands[1], col = 'blue', lty = 2, lwd = 2)
+  lines(bands[2], col = 'blue', lty = 2, lwd = 2)
+  
+  # Plot the fitted linear regression line and the computed confidence bands
+  # on the non-log adjusted graph 
+  
+  plot(10^x, 10^y, cex = 1.75, pch = 21, bg = 'gray', xlab = "Nombre patients",   ylab = "Nombre Medicines Oncolologues ETP ")
+  lines(y = 10^y.fit2, x= 10^x_new2, col = 'black', lwd = 2)
+  lines(y = 10^bands[,1], x = 10^x_bands, col = 'blue', lty = 2, lwd = 2)
+  lines(y = 10^bands[,2], x = 10^x_bands, col = 'blue', lty = 2, lwd = 2)
 
 ```
 
-```{r}
-ggplot(cancero, aes(x=log_Patients, y=log_CANCERO_C28)) + 
-  geom_point(color='#2980B9', size = 4) + 
-  geom_smooth(method=lm, color='#2C3E50')
 
-```
 
