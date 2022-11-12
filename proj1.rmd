@@ -235,7 +235,7 @@ sprintf("%s has a male staff percentage of %.2f%%", propH[i,1], as.double(propH[
 taliers universitaires titulaires (variable ETP_PU). Afficher les 10 premières. Représenter graphiquement
 par un diagramme en barre ce nombre pour les 5 premières.
 
-Nous ajoutons une variable (ETP_tot) contenant le total des ETP pour chaque spécialité,  à la table specialites.
+Nous ajoutons une variable (ETP_tot) contenant le total des ETP pour chaque spécialité,  à la table spécialités.
 ```{r}
 
 specialites$ETP_tot <- rep(0,len)
@@ -263,19 +263,19 @@ barplot(height = short_ordered_specialites[,3], names.arg = short_ordered_specia
 
 # Description et analyse des Données
 ### Etude de la relation entre le nombre de médecins oncologues médicaux ETP et nombre de patients.
-Dans cette partie de l'analyse, nous visons à créer une ligne d'approximation linéaire avec un intervalle de confiance associé afin de mettre en relation le nombre nécessaire de  médecins oncologues ETP en fonction du nombre de Patients pour d'éventuels nouveaux hôpitaux
+Dans cette partie de l'analyse, nous visons à faire une régression linéaire avec un intervalle de confiance associé afin de mettre en relation le nombre nécessaire de  médecins oncologues ETP en fonction du nombre de Patients, pour d'éventuels nouveaux hôpitaux.
 
-Dans le graph de l'exercise 3 de CANCERo on observe que il y a un tendance de variance croissante avec la variable Patients, on dois donc testè l'hétéroscédasticité pour povoir appliquè la regression lineaire. On fait ça avec le Test de Breusch-Pagan.
+Dans le graphe de l'exercise 3 de CANCERO on observe qu'il y a un tendance de variance croissante avec la variable Patients, on doit donc tester l'hétéroscédasticité pour pouvoir appliquer la regression linéaire. On fait ça avec le Test de Breusch-Pagan.
 ```{r}
 #variables we care about: Patients, CANCERO_C28 of cancero
 model_cancero <- lm(CANCERO_C28 ~ Patients, data = cancero)
 bptest(model_cancero)
 
 ```
-Le p-value est 5.689e-12. Donc il est plut petit de 0.05, on rejet l'hypothese null et il y a  de l'hétéroscédasticité dans le modele.
+Le p-value est 5.689e-12. Donc il est plus petit que 0.05, on rejette l'hypothèse nulle et il y a  de l'hétéroscédasticité dans le modèle.
 
 
-Nous transformon la variable Patients pour éliminer l'hétéroscédasticité en prenant le log des les deux variables. 
+Nous transformons la variable Patients pour éliminer l'hétéroscédasticité en prenant le log des deux variables. 
 ```{r}
 cancero$log_Patients <- log10(cancero$Patients)
 #cancero$log_Patients[is.infinite(cancero$log_Patients),] <- NA 
@@ -289,7 +289,7 @@ bptest(model2_cancero)
 summary(model2_cancero)
 ```
 
-Pour calculer les intervalles de confiance pour la régression linéaire, nous supposons que les bruits suivent (approximativement) une distribution gaussienne. Cette hypothèse est valable en raison du théorème centrale de limite et lorsque le nombre d'échantillons est grand. Nous représentons ici graphiquement la régression linéaire avec le log-ajustement et sans, représentant l'intervalle de confiance
+Pour calculer les intervalles de confiance pour la régression linéaire, nous supposons que les bruits suivent (approximativement) une distribution gaussienne. Cette hypothèse est valable en raison du théorème centrale limite et lorsque le nombre d'échantillons est grand. Nous représentons ici graphiquement la régression linéaire avec le log-ajustement et sans celui-ci, représentant l'intervalle de confiance. 
 ```{r}
 #remove Na values
   x <- cancero$log_Patients
@@ -385,9 +385,6 @@ Donc ici nous allons clairement choisir les deux axes.
 
 Regardons les variables sur l'axe 1 et 2:
 
-```{r}
-plot(acp_specialites,choix="var",axes=c(1,2))
-```
 D'après le graphe nous pouvons voir que les deux variables sont corrélées partiellement. 
 
 
