@@ -7,7 +7,7 @@
 
 #Functions (✿◡‿◡)
 
-
+#1b
 disj_tab <- function(X){
   #doesn't handle NA values, i'm not sure how afcp handles them
   U <- data.frame()
@@ -23,10 +23,33 @@ disj_tab <- function(X){
   return(U)
 }
     
+
+
+#Exercise 1 (Putting all together)
+AFCM <- function(X) {
+  n <- nrow(X)
+  p <- ncol(X)
+  
+  #1.b
+  U <- data.matrix(disj_tab(X))
+  DE <- diag(p) #substitute diag(p) with DE
+  D <- diag(n)/n
+  Q <- diag(p) #sobsitute diag(p) with Q 
+    
+  #1.c
+  X1 <- n*U %*% inv(DE) -1
+  
+  #1.d
+  VQ <- t(X1) %*% D %*% X1%*%
+  ev <- eigen(VQ) #eigenvalues accessed by $values vectors by $vectors
+  
+    
+}
+
 #Test
 
 donnees <- data.frame(question1 = c(1,2,3,2,1,3), question2 = c(1,1,1,2,3,4))
-disj_tab(donnees)
+U <- disj_tab(donnees)
 
 
 #Ex 1
