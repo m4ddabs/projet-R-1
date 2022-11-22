@@ -22,6 +22,31 @@ disj_tab <- function(X){
   U[is.na(U)] = 0
   return(U)
 }
+
+
+Qnorm <- function(u, v,Q){
+  return(t(u)%*%Q%*%v)
+}
+
+DandQ <- function(X){
+  n <- nrow(X)
+  K <- ncol(X)
+  D <-diag(n) 
+  D <- (1/(n)) * D
+  Dsum <- diag(K)
+  for(i in 1:K){
+    Dsum[i,i]<-sum(X[,i])
+  }
+  Q <-(1/n*K)*Dsum 
+  return(c(Q,D,Dsum))
+}
+
+DandQ(matrix(nrow = 4))
+
+
+
+
+
     
 
 
@@ -53,5 +78,10 @@ U <- disj_tab(donnees)
 
 
 #Ex 1
+
+#1a)
+
+D <- diag()
+
 #Ex 2
 #Ex 3
