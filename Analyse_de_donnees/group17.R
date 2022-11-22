@@ -24,13 +24,21 @@ disj_tab <- function(X){
 }
 
 
-Qnorm <- function(u, v,Q){
+Qprod <- function(u, v,Q){ #this is a scalar product
   return(t(u)%*%Q%*%v)
 }
 
-DandQ <- function(X){
-  n <- nrow(X)
-  K <- ncol(X)
+
+
+#Exercise 1 (Putting all together)
+AFCM <- function(X) {
+  n0 <- nrow(X)
+  p <- ncol(X)
+  
+  #1.b
+  U <- data.matrix(disj_tab(X))
+  n <- nrow(U)
+  K <- ncol(U)
   D <-diag(n) 
   D <- (1/(n)) * D
   Dsum <- diag(K)
@@ -38,34 +46,12 @@ DandQ <- function(X){
     Dsum[i,i]<-sum(X[,i])
   }
   Q <-(1/n*K)*Dsum 
-  return(c(Q,D,Dsum))
-}
-
-DandQ(matrix(nrow = 4))
-
-
-
-
-
-    
-
-
-#Exercise 1 (Putting all together)
-AFCM <- function(X) {
-  n <- nrow(X)
-  p <- ncol(X)
-  
-  #1.b
-  U <- data.matrix(disj_tab(X))
-  DE <- diag(p) #substitute diag(p) with DE
-  D <- diag(n)/n
-  Q <- diag(p) #sobsitute diag(p) with Q 
     
   #1.c
-  X1 <- n*U %*% inv(DE) -1
+  X1 <- n*U %*% inv(Dsum) -1
   
   #1.d
-  VQ <- t(X1) %*% D %*% X1%*%
+  VQ <- t(X1) %*% D %*% X1%*% Q
   ev <- eigen(VQ) #eigenvalues accessed by $values vectors by $vectors
   
     
