@@ -56,7 +56,7 @@ AFCM <- function(X) {
   #1.d
   VQ <- t(X1) %*% D %*% X1%*% Q
   ev <- eigen(VQ) #eigenvalues accessed by $values vectors by $vectors
-  A <- ev$vectors
+  A <- Re(ev$vectors) 
   
   #Small eigen values (which should be 0 but approximation errors end up imaginary and then stuff gets messed up)
   for (i in 1:ncol(A)){
@@ -69,21 +69,17 @@ AFCM <- function(X) {
     print(A)
     
   #1.e
-  C = diag(n)
-  
+  C = c()
+    
   for (i in 1:ncol(A)){
-    C[,i] <- 1/sqrt(ev$values[i]) * X1 %*% A[,i]
-    
-
+    if (Re(ev$values[i]) > 0){ #transition formula only hold for positive eigenvalues
+      C <- cbind(C,1/sqrt(Re(ev$values[i])) * X1 %*% A[,i])
+    }
   }
-    
-  print(C)
-  C1 <- X1 %*% D %*% t(X1) %*% C
-  print(C1)
-  print("divisione componente per componente")
-  print(C1/C)
-
-  #Test: the are eigenvectors of XDX'
+  #1.f 
+  percents_intertie = ev$values[1:ncol(C)]/sum(ev$values[1:ncol(C)])
+  
+  
   
 }
 
@@ -91,58 +87,14 @@ AFCM <- function(X) {
 
 donnees <- data.frame(question1 = c(1,2,3,2,1,3,1,2,1,1), question2 = c(1,1,1,2,3,4,1,2,3,1))
 
-
-#test of AFCM function:
-
-X <- donnees
-
-#1.b
-U <- data.matrix(disj_tab(X))
-n <- nrow(U)
-K <- ncol(U)
-D <- diag(n) 
-D <- (1/(n)) * D
-Dsum <- diag(K)
-for(i in 1:K){
-  Dsum[i,i]<-sum(U[,i])
-}
-Q <-(1/n*K)*Dsum 
-
-#1.c
-X1 <- n*U %*% inv(Dsum) -1
-
-#1.d
-VQ <- t(X1) %*% D %*% X1%*% Q
-ev <- eigen(VQ) #eigenvalues accessed by $values vectors by $vectors
-A <- ev$vectors
-
-#Imaginary eigenvalues popping up because of approximation errors
-#Also by construction eigen values are alway real, should convert them
-#Also consier them null under a certain value
-#We should ask prof hot to handle this cases i think
-for (i in 1:ncol(A)){
-  #(sprintf("The ith vector is %s with Qnorm %f",paste(A[,i], collapse = " "),Qnorm(A[,i],Q)))
-  
-  A[,i] <- A[,i]/Qnorm(A[,i], Q)
-  
-  #print(sprintf("The ith vector is %s with Qnorm %f",paste(A[,i], collapse = " "),Qnorm(A[,i],Q)))
-}
-print(A)
-
 #1.e
-C = diag(n)
+C = c()
 
 for (i in 1:ncol(A)){
-  print(1/sqrt(ev$values[i]) * X1 %*% A[,i])
-  C[,i] <- 1/sqrt(ev$values[i]) * X1 %*% A[,i]
-  
-  
+  if (Re(ev$values[i]) > 0){
+    C <- cbind(C,1/sqrt(Re(ev$values[i])) * X1 %*% A[,i])
+  }
 }
 
-print(C)
-C1 <- X1 %*% t(X1) %*% D %*% C
-print(C1)
-print("divisione componente per componente")
-print(C1/C)
-
-#Test: the are eigenvectors of XDX'
+percentage_intertie = ev$values[1:ncol(C)]/sum(ev$values[1:ncol(C)])
+#1.f 
