@@ -63,12 +63,18 @@ AFCM <- function(X) {
   X <- n*U %*% inv(Dsum) -1
   
   #1.d
-  VQ <- t(X) %*% D %*% X%*% Q
-  ev <- eigen(VQ, symmetric = TRUE) #eigenvalues accessed by $values vectors by $vectors
-  A <- c() 
+  V <- t(X) %*% D %*% X
+  Q_sqrt <- sqrt(Q)
+  VQ <- V %*% Q
+  ev <- eigen(Q_sqrt %*% V %*% Q_sqrt) #eigenvalues accessed by $values vectors by $vectors
+  ord <- order(Re(ev$values), decreasing = TRUE)
+  ev$vectors <- inv(Q_sqrt) %*% ev$vectors[,ord] #obtaines eigenvectors for VQ (look fischier pdf "answer" added)
+  ev$values <- ev$values[ord]
+  
   
   #Small eigen values (which should be 0 but approximation errors end up imaginary and then stuff gets messed up)
-  for (i in 1:length(ev$values)){
+  A <- c()
+   for (i in 1:length(ev$values)){
     #(sprintf("The ith vector is %s with Qnorm %f",paste(A[,i], collapse = " "),Qnorm(A[,i],Q)))
     if (Re(ev$values[i]) > 0){ #We are only interested in the axis with positive eigenvalues (inertia)
       A <- cbind(A,ev$vectors[,i]/Qnorm(ev$vectors[,i], Q))
@@ -81,17 +87,23 @@ AFCM <- function(X) {
     
   #1.e
   C = c()
-    
   for (i in 1:ncol(A)){  
       C <- cbind(C,1/sqrt(Re(ev$values[i])) * X %*% Q %*% A[,i])
   }
   
   #1.f 
-  percents_intertie = ev$values[1:ncol(C)]/sum(ev$values[1:ncol(C)])
+  percentages_intertie = ev$values[1:ncol(C)]/sum(ev$values[1:ncol(C)])
   
   #1.g For every lin find the coordinates in respect to the columns of A
+  A_tilde <- A #ith line = coordinates of ith-variables on c(k) basis
+  C_tilde <- C #ith line =coordinates of ith-individue on a(k) basis
+  for (i in 1:ncol(A)) {
+    A_tilde[,i] <- A_tilde[,i] * ev$values[i]
+    C_tilde[,i] <- C_tilde[,i] * ev$values[i]
+  }
   
-  
+  #1.h Renvoyez la liste résultat comportant les pourcentages d’inertie Λ et les matrices A, C, A˜ et C˜.
+  return(list(percentages_intertie, A, C, A_tilde, C_tilde))
 }
 
 #Test
@@ -121,12 +133,12 @@ X <- n * U %*% inv(Dsum) -1
 #1.d
 V <- t(X) %*% D %*% X
 Q_sqrt <- sqrt(Q)
+VQ <- V %*% Q
 ev <- eigen(Q_sqrt %*% V %*% Q_sqrt) #eigenvalues accessed by $values vectors by $vectors
 ord <- order(Re(ev$values), decreasing = TRUE)
-ev$vectors <- inv(Q) %*% ev$vectors[,ord] #obtaines eigenvectors for VQ (look fischier pdf "answer" added)
+ev$vectors <- inv(Q_sqrt) %*% ev$vectors[,ord] #obtaines eigenvectors for VQ (look fischier pdf "answer" added)
 ev$values <- ev$values[ord]
 
-#Small eigen values (which should be 0 but approximation errors end up imaginary and then stuff gets messed up)
 A <- c() 
 for (i in 1:K){
 
@@ -148,8 +160,11 @@ for (i in 1:ncol(A)){
 
 W <- X %*% Q %*% t(X) %*% D
 C1 <- W %*% C
-test_eigenvectoriality <- C1/C #the coulums are constante ---> C is made of the eigenvectors of W
+test_eigenvectoriality <- C1/C #the coulums are constante ---> C is made of the eigenvectors of W,
+#ok for vector with big inertia works, i think the rest may be approxiamtion errors and we really not care
+#also the vectors of C are D-orthonormal :)
+
 #1.f 
-percents_intertie = ev$values[1:ncol(C)]/sum(ev$values[1:ncol(C)])
+percentage_inertie = ev$values[1:ncol(C)]/sum(ev$values[1:ncol(C)])
 
 
