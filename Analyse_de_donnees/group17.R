@@ -1,8 +1,8 @@
 # 22210663
 # 22210574
 # 22010058
-#NOTES, maybe to ask prof
-#1) VQ is not necesserly symmetric -> it may not be diagonizable (or have complex eigenvectors)... is that right?
+#NOTES
+#!9 fix commentaire
 
 #Imports 
 library(matlib)
@@ -103,68 +103,27 @@ AFCM <- function(X) {
   }
   
   #1.h Renvoyez la liste résultat comportant les pourcentages d’inertie Λ et les matrices A, C, A˜ et C˜.
-  return(list(percentages_intertie, A, C, A_tilde, C_tilde))
+  return(percentages_intertie, A, C, A_tilde, C_tilde)
+}
+
+plot_individues <- function(afcm, n_axes) {
+  
 }
 
 #Test
 
 donnees <- data.frame(question1 = c(1,2,3,2,1,3,1,2,1,1), question2 = c(1,1,1,2,3,4,1,2,3,1))
 
-#AFCM test
+AFCM_donnees <- AFCM(donnees)
 
-X <- disj_tab(donnees)
-n0 <- nrow(X)
-p <- ncol(X)
+#Selection des axes
+barplot(unlist(AFCM_donnees[1]))
 
-#1.b
-U <- data.matrix(disj_tab(X))
-n <- nrow(U)
-K <- ncol(U)
-D <- diag(n) 
-D <- (1/(n)) * D
-Dsum <- diag(K)
-for(i in 1:K){
-  Dsum[i,i]<-sum(U[,i])
-}
-Q <-(1/n*K)*Dsum 
-
-X <- n * U %*% inv(Dsum) -1
-
-#1.d
-V <- t(X) %*% D %*% X
-Q_sqrt <- sqrt(Q)
-VQ <- V %*% Q
-ev <- eigen(Q_sqrt %*% V %*% Q_sqrt) #eigenvalues accessed by $values vectors by $vectors
-ord <- order(Re(ev$values), decreasing = TRUE)
-ev$vectors <- inv(Q_sqrt) %*% ev$vectors[,ord] #obtaines eigenvectors for VQ (look fischier pdf "answer" added)
-ev$values <- ev$values[ord]
-
-A <- c() 
-for (i in 1:K){
-
-  if (Re(ev$values[i]) > 0){ #We are only interested in the axis with positive eigenvalues (inertia)
-    A <- cbind(A, ev$vectors[,i]/Qnorm(ev$vectors[,i], Q))
-    print(sprintf("The ith vector is  with eigval%s", as.character(ev$values[i])))
-  }
-   #print(sprintf("The ith vector is %s with Qnorm %f",paste(A[,i], collapse = " "),Qnorm(A[,i],Q)))
-}
-print(A)
-
-#1.e
-C = c()
-
-for (i in 1:ncol(A)){  
-  C <- cbind(C,1/sqrt(Re(ev$values[i])) * X %*% Q %*% A[,i])
-}
+matplot(as.data.frame(AFCM_donnees[3])[1,], as.data.frame(AFCM_donnees[3])[2,])
+     
 
 
-W <- X %*% Q %*% t(X) %*% D
-C1 <- W %*% C
-test_eigenvectoriality <- C1/C #the coulums are constante ---> C is made of the eigenvectors of W,
-#ok for vector with big inertia works, i think the rest may be approxiamtion errors and we really not care
-#also the vectors of C are D-orthonormal :)
 
-#1.f 
-percentage_inertie = ev$values[1:ncol(C)]/sum(ev$values[1:ncol(C)])
+
 
 
