@@ -48,7 +48,8 @@ AFCM <- function(X) {
   p <- ncol(X)
   
   #1.b
-  U <- data.matrix(disj_tab(X))
+  disjoint_table <- disj_tab(X)
+  U <- data.matrix(disjoint_table)
   n <- nrow(U)
   K <- ncol(U)
   D <- diag(n) 
@@ -103,7 +104,7 @@ AFCM <- function(X) {
   }
   
   #1.h Renvoyez la liste résultat comportant les pourcentages d’inertie Λ et les matrices A, C, A˜ et C˜.
-  return(percentages_intertie, A, C, A_tilde, C_tilde)
+  return(list(percentages_intertie, A, C, A_tilde, C_tilde, names(disjoint_table)))
 }
 
 plot_individues <- function(afcm, n_axes) {
@@ -111,15 +112,18 @@ plot_individues <- function(afcm, n_axes) {
 }
 
 #Test
+exacm <- read.csv("exacm.csv", header = TRUE, row.names = 1, sep = ";")
 
-donnees <- data.frame(question1 = c(1,2,3,2,1,3,1,2,1,1), question2 = c(1,1,1,2,3,4,1,2,3,1))
-
-AFCM_donnees <- AFCM(donnees)
+AFCM_exacm <- AFCM(exacm)
 
 #Selection des axes
 barplot(unlist(AFCM_donnees[1]))
+C_tilde <- as.data.frame(AFCM_exacm[5])
+A_tilde <- as.data.frame(AFCM_exacm[4])
 
-matplot(as.data.frame(AFCM_donnees[3])[1,], as.data.frame(AFCM_donnees[3])[2,])
+variable_names <- AFCM_exacm[6]
+plot(C_tilde[,1], C_tilde[,2])
+text(C_tilde[,1], C_tilde[,2],  labels = variable_names)
      
 
 
