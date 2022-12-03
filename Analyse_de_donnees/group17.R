@@ -16,7 +16,7 @@ disj_tab <- function(X){
   for (variable in names(X)){
     for (i in 1:nrow(X)) {
       value <- X[i,variable]
-      name <- paste(as.character(variable),as.character(value), sep = "_")
+      name <- as.character(value) #paste(as.character(variable),as.character(value), sep = "_") if all the questions have same answers
       U[i,name] = 1
     }
   }
@@ -117,13 +117,17 @@ exacm <- read.csv("exacm.csv", header = TRUE, row.names = 1, sep = ";")
 AFCM_exacm <- AFCM(exacm)
 
 #Selection des axes
-barplot(unlist(AFCM_donnees[1]))
+barplot(unlist(AFCM_exacm[1]))
 C_tilde <- as.data.frame(AFCM_exacm[5])
 A_tilde <- as.data.frame(AFCM_exacm[4])
 
-variable_names <- AFCM_exacm[6]
 plot(C_tilde[,1], C_tilde[,2])
-text(C_tilde[,1], C_tilde[,2],  labels = variable_names)
+text(C_tilde[,1], C_tilde[,2], labels = row.names(exacm))
+
+variable_names <- AFCM_exacm[6]
+plot(A_tilde[,1], A_tilde[,2])
+text(A_tilde[,1], A_tilde[,2], labels = variable_names)
+
      
 
 
