@@ -114,8 +114,11 @@ AFCM <- function(X) {
   return(list(percentages_intertie, A, C, A_tilde, C_tilde))
 }
 
-plot_individues <- function(afcm, n_axes) {
-  plot(afcm[[5]][,1], afcm[[5]][,2])
+plot_individues <- function(afcm) {
+  C_tilde <- afcm[[5]]
+  ggplot(C_tilde, aes(x = C_tilde[,1], y = C_tilde[,2], label = row.names(C_tilde))) +
+    geom_point() +
+    geom_text(position=position_jitter(width=1,height=1) )
 }
 
 
@@ -147,7 +150,7 @@ text(C_tilde[,1]+1, C_tilde[,2], labels = row.names(C_tilde))
 #text(A_tilde[,1]+1, A_tilde[,2], labels = row.names(A_tilde))
 
 
-plot_individues(AFCM_exacm, 2)
+plot_individues(AFCM_exacm)
 plot_variables(AFCM_exacm)
      
 
