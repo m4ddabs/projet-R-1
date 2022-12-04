@@ -128,6 +128,8 @@ variable_names <- AFCM_exacm[6]
 plot(A_tilde[,1], A_tilde[,2])
 text(A_tilde[,1], A_tilde[,2], labels = variable_names)
 
+
+
      
 
 
