@@ -6,6 +6,7 @@
 
 #Imports 
 library(matlib)
+library(ggplot2)
 
 #Functions (✿◡‿◡)
 
@@ -46,6 +47,7 @@ A_coords <- function(A,v) {
 AFCM <- function(X) {
   n0 <- nrow(X)
   p <- ncol(X)
+  ind_names <- row.names(X)
   
   #1.b
   disjoint_table <- disj_tab(X)
@@ -104,7 +106,9 @@ AFCM <- function(X) {
   }
   
   #1.h Renvoyez la liste résultat comportant les pourcentages d’inertie Λ et les matrices A, C, A˜ et C˜.
-  return(list(percentages_intertie, A, C, A_tilde, C_tilde, names(disjoint_table)))
+  A_tilde <- as.data.frame(A_tilde, row.names = names(disjoint_table))
+  C_tilde <- as.data.frame(C_tilde, row.names = ind_names)
+  return(list(percentages_intertie, A, C, A_tilde, C_tilde))
 }
 
 plot_individues <- function(afcm, n_axes) {
@@ -122,11 +126,11 @@ C_tilde <- as.data.frame(AFCM_exacm[5])
 A_tilde <- as.data.frame(AFCM_exacm[4])
 
 plot(C_tilde[,1], C_tilde[,2])
-text(C_tilde[,1], C_tilde[,2], labels = row.names(exacm))
+text(C_tilde[,1]+1, C_tilde[,2], labels = row.names(C_tilde))
 
 variable_names <- AFCM_exacm[6]
 plot(A_tilde[,1], A_tilde[,2])
-text(A_tilde[,1], A_tilde[,2], labels = variable_names)
+text(A_tilde[,1], A_tilde[,2], labels = row.names(A_tilde))
 
 plot_individues(AFCM_donnees, 2)
      
