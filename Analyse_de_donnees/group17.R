@@ -108,11 +108,24 @@ AFCM <- function(X) {
   #1.h Renvoyez la liste résultat comportant les pourcentages d’inertie Λ et les matrices A, C, A˜ et C˜.
   A_tilde <- as.data.frame(A_tilde, row.names = names(disjoint_table))
   C_tilde <- as.data.frame(C_tilde, row.names = ind_names)
+  col_names <- c()
+  
+  
   return(list(percentages_intertie, A, C, A_tilde, C_tilde))
 }
 
 plot_individues <- function(afcm, n_axes) {
   plot(afcm[[5]][,1], afcm[[5]][,2])
+}
+
+
+plot_variables <-  function(afcm) {
+  A_tilde <- afcm[[4]]
+  ggplot(A_tilde, aes(x = A_tilde[,1], y = A_tilde[,2], label = row.names(A_tilde))) +
+    geom_point() +
+    geom_text(position=position_jitter(width=1,height=1) )
+    
+  
 }
 
 #Test
@@ -128,11 +141,14 @@ A_tilde <- as.data.frame(AFCM_exacm[4])
 plot(C_tilde[,1], C_tilde[,2])
 text(C_tilde[,1]+1, C_tilde[,2], labels = row.names(C_tilde))
 
-variable_names <- AFCM_exacm[6]
-plot(A_tilde[,1], A_tilde[,2])
-text(A_tilde[,1], A_tilde[,2], labels = row.names(A_tilde))
 
-plot_individues(AFCM_donnees, 2)
+
+#plot(A_tilde, axes = c(1,2))
+#text(A_tilde[,1]+1, A_tilde[,2], labels = row.names(A_tilde))
+
+
+plot_individues(AFCM_exacm, 2)
+plot_variables(AFCM_exacm)
      
 
 
