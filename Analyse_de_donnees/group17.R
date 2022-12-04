@@ -108,7 +108,7 @@ AFCM <- function(X) {
 }
 
 plot_individues <- function(afcm, n_axes) {
-  
+  plot(afcm[[5]][,1], afcm[[5]][,2])
 }
 
 #Test
@@ -128,8 +128,7 @@ variable_names <- AFCM_exacm[6]
 plot(A_tilde[,1], A_tilde[,2])
 text(A_tilde[,1], A_tilde[,2], labels = variable_names)
 
-
-
+plot_individues(AFCM_donnees, 2)
      
 
 
