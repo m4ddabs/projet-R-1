@@ -100,7 +100,7 @@ plot_individues <- function(afcm) {
   C_tilde <- afcm[[5]]
   ggplot(C_tilde, aes(x = C_tilde[,1], y = C_tilde[,2], label = row.names(C_tilde))) +
     geom_point() +
-    geom_text(position=position_jitter(width=1,height=1) )
+    geom_text(position=position_jitter(width=1/2,height=1/2) )
 }
 
 #Exercise 3
@@ -108,7 +108,7 @@ plot_variables <-  function(afcm) {
   A_tilde <- afcm[[4]]
   ggplot(A_tilde, aes(x = A_tilde[,1], y = A_tilde[,2], label = row.names(A_tilde))) +
     geom_point() +
-    geom_text(position=position_jitter(width=1,height=1) )
+    geom_text(position=position_jitter(width=1/3,height=1/3) )
 }
 
 #Exercise 4
@@ -119,7 +119,7 @@ AFCM_exacm <- AFCM(exacm)
 #selection axis
 barplot(unlist(AFCM_exacm[1]))
 
-
+par(mfrow = c(1,3))
 plot_individues(AFCM_exacm)
 plot_variables(AFCM_exacm)
      
